@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FF14 Watch">
+<meta name="theme-color" content="#0a0e17">
+<title>FFXIV Patch Watch</title>
+<style>
+  :root {
+    --bg-void: #0a0e17;
+    --bg-panel: #121a2b;
+    --bg-panel-2: #1a2438;
+    --bg-panel-3: #202c45;
+    --line: rgba(201, 168, 106, 0.22);
+    --gold: #c9a86a;
+    --gold-bright: #e8c886;
+    --crystal: #6fd6e8;
+    --crystal-dim: rgba(111, 214, 232, 0.35);
+    --ink: #eae6da;
+    --ink-dim: #9aa3b8;
+    --ink-faint: #5f6a80;
+    --font-display: 'Cinzel', 'Noto Serif JP', serif;
+    --font-body: 'Noto Sans JP', 'Hiragino Sans', sans-serif;
+  }
+
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 24px;
+    background: var(--bg-void);
+    font-family: var(--font-body);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+
+  .widget {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    background:
+      radial-gradient(120% 140% at 15% -10%, rgba(111,214,232,0.10), transparent 55%),
+      linear-gradient(180deg, var(--bg-panel) 0%, var(--bg-void) 100%);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 24px 24px 20px;
+    box-shadow:
+      0 0 0 1px rgba(0,0,0,0.4),
+      0 20px 50px -20px rgba(0,0,0,0.8),
+      inset 0 1px 0 rgba(255,255,255,0.03);
+    overflow: hidden;
+  }
+
+  .widget::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 180px; height: 180px;
+    background: radial-gradient(circle, var(--crystal-dim), transparent 70%);
+    filter: blur(6px);
+    pointer-events: none;
+  }
+
+  .header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10.5px;
+    letter-spacing: 0.22em;
+    color: var(--gold);
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  .eyebrow .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--crystal);
+    box-shadow: 0 0 8px 2px var(--crystal-dim);
+    animation: pulse 2.2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.5; transform: scale(0.85); }
+    50% { opacity: 1; transform: scale(1.1); }
+  }
+
+  .gear-btn {
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    font-size: 13px;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.2s, color 0.2s, transform 0.3s;
+  }
+  .gear-btn:hover { border-color: var(--gold); color: var(--gold-bright); }
+  .gear-btn.open { transform: rotate(50deg); color: var(--gold-bright); border-color: var(--gold); }
+
+  .current-patch-badge {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--gold-bright);
+    background: var(--bg-panel-3);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 4px 10px;
+    white-space: nowrap;
+  }
+
+  .today-date {
+    font-size: 11px;
+    color: var(--ink-dim);
+    margin-bottom: 14px;
+    letter-spacing: 0.02em;
+    text-align: right;
+  }
+
+  /* Item rows */
+  .rows { display: flex; flex-direction: column; gap: 8px; }
+
+  .row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: var(--bg-panel-2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  a.row {
+    cursor: pointer;
+  }
+  a.row:hover, a.row:active {
+    border-color: var(--gold);
+    background: var(--bg-panel-3);
+  }
+
+  .row-icon {
+    width: 30px; height: 30px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background: var(--bg-panel-3);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--crystal);
+    font-size: 14px;
+    text-shadow: 0 0 8px var(--crystal-dim);
+  }
+
+  .row-body { flex: 1; min-width: 0; }
+
+  .row-title {
+    font-size: 13.5px;
+    color: var(--ink);
+    font-weight: 500;
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+
+  .row-icon-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .ongoing-badge {
+    display: inline-block;
+    font-size: 8.5px;
+    font-weight: 700;
+    color: #201607;
+    background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+    border-radius: 10px;
+    padding: 1px 6px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  .row-category {
+    font-size: 9.5px;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+
+  .row-sub {
+    font-size: 11px;
+    color: var(--ink-dim);
+    margin-top: 2px;
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+
+  .row-note {
+    font-size: 10.5px;
+    color: var(--ink-faint);
+    margin-top: 2px;
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+
+  .row-note-list {
+    margin: 3px 0 0;
+    padding-left: 14px;
+    font-size: 10.5px;
+    color: var(--ink-faint);
+  }
+  .row-note-list li {
+    margin-bottom: 1px;
+    overflow-wrap: break-word;
+  }
+  .row-note-list li::marker {
+    color: var(--gold);
+  }
+
+  .row-count {
+    text-align: right;
+    margin-top: 5px;
+  }
+
+  .row-count .num {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--crystal);
+    text-shadow: 0 0 10px var(--crystal-dim);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .row-count .num.today {
+    font-size: 13px;
+    color: var(--gold-bright);
+    text-shadow: none;
+  }
+
+  .row-count .num-sm {
+    font-size: 16px;
+  }
+
+  .row-count .unit {
+    font-size: 10px;
+    color: var(--ink-dim);
+    letter-spacing: 0.06em;
+  }
+
+  .row-count .row-prefix {
+    font-size: 10px;
+    color: var(--ink-dim);
+    letter-spacing: 0.04em;
+    margin-right: 2px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 30px 10px;
+    color: var(--ink-faint);
+    font-size: 12.5px;
+    line-height: 1.7;
+  }
+
+  .footer-note {
+    margin-top: 16px;
+    font-size: 10px;
+    color: var(--ink-dim);
+    opacity: 0.6;
+    text-align: right;
+    letter-spacing: 0.02em;
+  }
+
+  /* Settings panel */
+  .settings-panel {
+    display: none;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--line);
+  }
+  .settings-panel.open { display: block; }
+
+  .settings-title {
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    font-weight: 700;
+  }
+
+  .setting-item {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    overflow: hidden;
+    background: var(--bg-panel-2);
+  }
+
+  .setting-check-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+  }
+
+  .checkbox {
+    width: 18px; height: 18px;
+    flex-shrink: 0;
+    border: 1.5px solid var(--ink-faint);
+    border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .checkbox.checked {
+    background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+    border-color: var(--gold);
+  }
+  .checkbox svg { display: none; width: 11px; height: 11px; }
+  .checkbox.checked svg { display: block; }
+
+  .setting-label {
+    font-size: 13px;
+    color: var(--ink);
+    font-weight: 500;
+    flex: 1;
+  }
+
+  .setting-icon {
+    color: var(--crystal);
+    font-size: 13px;
+    width: 18px;
+    text-align: center;
+  }
+
+  .setting-fields {
+    display: none;
+    padding: 4px 12px 12px 40px;
+  }
+  .setting-fields.show { display: block; }
+
+  .field { margin-bottom: 10px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label {
+    display: block;
+    font-size: 10px;
+    color: var(--ink-dim);
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+  .field input {
+    width: 100%;
+    background: var(--bg-panel-3);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 7px 9px;
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 12.5px;
+  }
+  .field input:focus {
+    outline: none;
+    border-color: var(--gold);
+  }
+  .field-row { display: flex; gap: 8px; }
+  .field-row .field { flex: 1; }
+
+  .reset-note {
+    padding: 4px 12px 12px 40px;
+    font-size: 11px;
+    color: var(--ink-faint);
+  }
+
+  .settings-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .btn-save, .btn-cancel {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-family: var(--font-body);
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--line);
+  }
+  .btn-save {
+    background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+    color: #201607;
+    border: none;
+    font-weight: 700;
+  }
+  .btn-cancel {
+    background: none;
+    color: var(--ink-dim);
+  }
+  .save-status {
+    font-size: 10.5px;
+    color: var(--crystal);
+    text-align: center;
+    margin-top: 8px;
+    height: 12px;
+  }
+</style>
+</head>
+<body>
+
+<div class="widget">
+  <div class="header-row">
+    <div class="eyebrow"><span class="dot"></span>FINAL FANTASY XIV</div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span class="current-patch-badge" id="currentPatchBadge"></span>
+      <button class="gear-btn" id="gearBtn" title="設定">⚙</button>
+    </div>
+  </div>
+
+  <div class="today-date" id="todayDate"></div>
+
+  <div class="rows" id="rows"></div>
+
+  <div class="footer-note">※非公式</div>
+
+  <div class="settings-panel" id="settingsPanel">
+    <div class="settings-title">表示する項目</div>
+    <div id="settingItems"></div>
+
+    <div class="settings-actions">
+      <button class="btn-cancel" id="cancelBtn">閉じる</button>
+      <button class="btn-save" id="saveBtn">保存</button>
+    </div>
+    <div class="save-status" id="saveStatus"></div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'ff14-widget-config-v2';
+
+const ITEM_META = {
+  patch:    { icon: '★', label: '次パッチ' },
+  patch2:   { icon: '★', label: '次々パッチ' },
+  reset:    { icon: '⟲', label: '火曜リセット' },
+  pll:      { icon: '▶', label: 'PLL' },
+  mogcolle: { icon: '❖', label: 'モグコレ' },
+  seasonal: { icon: '⧗', label: 'シーズナルイベント' },
+  fanfest_anaheim: { icon: '⚑', label: 'ファンフェス(アナハイム)' },
+  fanfest_berlin:  { icon: '⚑', label: 'ファンフェス(ベルリン)' },
+  fanfest_tokyo:   { icon: '⚑', label: 'ファンフェス(東京)' }
+};
+
+const ITEM_ORDER = ['patch', 'patch2', 'reset', 'pll', 'mogcolle', 'seasonal', 'fanfest_anaheim', 'fanfest_berlin', 'fanfest_tokyo'];
+
+const CATEGORY_LABELS = {
+  patch: 'アップデート',
+  patch2: 'アップデート',
+  reset: 'ウィークリー',
+  pll: '生放送',
+  mogcolle: '報酬交換',
+  seasonal: 'シーズナルイベント',
+  fanfest_anaheim: 'リアルイベント',
+  fanfest_berlin: 'リアルイベント',
+  fanfest_tokyo: 'リアルイベント'
+};
+
+const CATEGORY_COLORS = {
+  patch: '#c9a86a',
+  patch2: '#c9a86a',
+  reset: '#6fd6e8',
+  pll: '#e0895c',
+  mogcolle: '#7fd9a0',
+  seasonal: '#e08fc4',
+  fanfest_anaheim: '#8f9fe0',
+  fanfest_berlin: '#8f9fe0',
+  fanfest_tokyo: '#8f9fe0'
+};
+
+const DEFAULT_CONFIG = {
+  patch: {
+    enabled: true,
+    curPatch: '7.51',
+    curName: '絶妖星乱舞・コスモエクスプローラー',
+    curDate: '2026-06-02',
+    nextPatch: '7.55',
+    nextDate: '2026-07-28',
+    nextNote: ['クレセントアイル北征編', 'ファントムウェポン', 'ヒルディブランド黄金編']
+  },
+  patch2: {
+    enabled: true,
+    title: 'パッチ7.56',
+    date: '2026-09-08',
+    note: ['メインクエストPart2', '魔獣使い実装']
+  },
+  reset: {
+    enabled: true
+  },
+  pll: {
+    enabled: true,
+    title: '第93回 プロデューサーレターLIVE',
+    date: ''
+  },
+  mogcolle: {
+    enabled: true,
+    title: 'モグモグ★コレクション ～霧の中の経典～（終了済み）',
+    date: '2026-04-28'
+  },
+  seasonal: {
+    enabled: true,
+    title: 'あらくれ男と未知なるゴーレム2026',
+    startDate: '2026-06-25',
+    date: '2026-07-13',
+    url: 'https://jp.finalfantasyxiv.com/lodestone/special/2026/Theres_Golems_in_Those_Hills/uG8fdJUc3q'
+  },
+  fanfest_anaheim: {
+    enabled: true,
+    title: 'ファンフェス2026 in アナハイム（終了）',
+    startDate: '2026-04-24',
+    date: '2026-04-25',
+    url: 'https://jp.finalfantasyxiv.com/lodestone/topics/detail/7a17af145e4e04a74d4491a8d78d48360bee5564'
+  },
+  fanfest_berlin: {
+    enabled: true,
+    title: 'ファンフェス2026 in ベルリン',
+    startDate: '2026-07-25',
+    date: '2026-07-26',
+    url: 'https://jp.finalfantasyxiv.com/lodestone/topics/detail/7a17af145e4e04a74d4491a8d78d48360bee5564'
+  },
+  fanfest_tokyo: {
+    enabled: true,
+    title: 'ファンフェス2026 in 東京',
+    startDate: '2026-10-31',
+    date: '2026-11-01',
+    url: 'https://jp.finalfantasyxiv.com/lodestone/topics/detail/7a17af145e4e04a74d4491a8d78d48360bee5564'
+  }
+};
+
+let config = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+
+function daysUntil(dateStr, timeJST) {
+  if (!dateStr) return null;
+  const time = timeJST || '00:00:00';
+  const target = new Date(dateStr + 'T' + time + '+09:00');
+  const now = new Date();
+  const diff = target - now;
+  return Math.ceil(diff / 86400000);
+}
+
+function msUntil(dateStr, timeJST) {
+  if (!dateStr) return null;
+  const time = timeJST || '00:00:00';
+  const target = new Date(dateStr + 'T' + time + '+09:00');
+  const now = new Date();
+  return target - now;
+}
+
+function nextTuesday17() {
+  const now = new Date();
+  // Work in JST
+  const jstNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+  const day = jstNow.getDay(); // 0=Sun ... 2=Tue
+  let daysAhead = (2 - day + 7) % 7;
+  const candidate = new Date(jstNow);
+  candidate.setHours(17, 0, 0, 0);
+  candidate.setDate(jstNow.getDate() + daysAhead);
+  if (daysAhead === 0 && jstNow.getHours() >= 17) {
+    candidate.setDate(candidate.getDate() + 7);
+  }
+  const diff = candidate - jstNow;
+  if (diff <= 0) return 0;
+  return Math.ceil(diff / 86400000);
+}
+
+function nextTuesday17Ms() {
+  const now = new Date();
+  const jstNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+  const day = jstNow.getDay();
+  let daysAhead = (2 - day + 7) % 7;
+  const candidate = new Date(jstNow);
+  candidate.setHours(17, 0, 0, 0);
+  candidate.setDate(jstNow.getDate() + daysAhead);
+  if (daysAhead === 0 && jstNow.getHours() >= 17) {
+    candidate.setDate(candidate.getDate() + 7);
+  }
+  return candidate - jstNow;
+}
+
+// days: the (ceil) day count used for filtering/sorting.
+// ms: the raw millisecond diff, used to render "N日N時間N分" when available.
+function todayJSTStr() {
+  const now = new Date();
+  const jstNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+  const y = jstNow.getFullYear();
+  const m = String(jstNow.getMonth() + 1).padStart(2, '0');
+  const d = String(jstNow.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function countLabel(days, ms) {
+  if (days === null) return { type: 'text', text: '未設定' };
+  if (days < 0) return { type: 'text', text: '終了' };
+  if (days === 0) return { type: 'text', text: '本日' };
+  if (typeof ms === 'number' && ms > 0) {
+    const wholeDays = Math.floor(ms / 86400000);
+    const hours = Math.floor((ms % 86400000) / 3600000);
+    const minutes = Math.floor((ms % 3600000) / 60000);
+    return { type: 'dhm', days: wholeDays, hours, minutes };
+  }
+  return { type: 'simple', value: days, unit: '日' };
+}
+
+function updateTodayDate() {
+  const el = document.getElementById('todayDate');
+  if (!el) return;
+  const now = new Date();
+  const jstNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+  const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+  const y = jstNow.getFullYear();
+  const m = jstNow.getMonth() + 1;
+  const d = jstNow.getDate();
+  const w = weekdays[jstNow.getDay()];
+  el.textContent = `${y}/${String(m).padStart(2,'0')}/${String(d).padStart(2,'0')}（${w}）`;
+}
+
+function renderRows() {
+  const container = document.getElementById('rows');
+  container.innerHTML = '';
+
+  const badge = document.getElementById('currentPatchBadge');
+  if (badge) {
+    badge.textContent = config.patch && config.patch.curPatch ? ('Patch ' + config.patch.curPatch) : '';
+  }
+
+  const enabledItems = ITEM_ORDER.filter(key => config[key].enabled);
+
+  if (enabledItems.length === 0) {
+    container.innerHTML = '<div class="empty-state">表示する項目がありません<br>⚙ から項目を選んでください</div>';
+    return;
+  }
+
+  const rowsData = enabledItems
+    .map(key => {
+      const meta = ITEM_META[key];
+      const item = config[key];
+      let title, dateText, note, days, ms, prefix = 'あと', categoryLabel = null, ongoing = false;
+
+      if (key === 'patch') {
+        title = 'パッチ' + item.nextPatch;
+        dateText = fmtDate(item.nextDate);
+        note = item.nextNote || ('現在 ' + item.curPatch + '「' + item.curName + '」');
+        days = daysUntil(item.nextDate);
+        ms = msUntil(item.nextDate);
+      } else if (key === 'reset') {
+        title = '週制限のリセット';
+        dateText = '毎週火曜 17:00 (JST)';
+        note = null;
+        days = nextTuesday17();
+        ms = nextTuesday17Ms();
+      } else {
+        title = item.title || meta.label;
+        if (item.startDate && item.date) {
+          dateText = fmtDate(item.startDate) + ' 〜 ' + fmtDate(item.date);
+          const today = todayJSTStr();
+          if (today >= item.startDate && today <= item.date) {
+            // Currently within the event's date range: keep counting down to the end date.
+            ongoing = true;
+            prefix = '終了まであと';
+            days = daysUntil(item.date);
+            ms = msUntil(item.date);
+          } else {
+            days = daysUntil(item.startDate);
+            ms = msUntil(item.startDate);
+          }
+        } else {
+          dateText = item.date ? fmtDate(item.date) : '日付未設定';
+          days = daysUntil(item.date);
+          ms = msUntil(item.date);
+        }
+        note = item.note || null;
+        if (key === 'seasonal') {
+          prefix = 'あと';
+        }
+      }
+
+      categoryLabel = CATEGORY_LABELS[key] || null;
+      const categoryColor = CATEGORY_COLORS[key] || null;
+      // Whether the row should disappear is always based on the true end date.
+      const filterDays = (key === 'patch' || key === 'reset') ? days : daysUntil(item.date);
+      const url = item.url || null;
+
+      return { key, meta, title, dateText, note, days, ms, filterDays, prefix, categoryLabel, categoryColor, url, ongoing };
+    })
+    // Drop items with no date set, and items whose (end) date has already passed.
+    .filter(({ filterDays }) => filterDays !== null && filterDays !== undefined && filterDays >= 0);
+
+  if (rowsData.length === 0) {
+    container.innerHTML = '<div class="empty-state">表示する項目がありません<br>⚙ から項目を選んでください</div>';
+    return;
+  }
+
+  // Sort: upcoming items soonest-first at top; items with no date set go last.
+  rowsData.sort((a, b) => {
+    if (a.days === null && b.days === null) return 0;
+    if (a.days === null) return 1;
+    if (b.days === null) return -1;
+    return a.days - b.days;
+  });
+
+  rowsData.forEach(({ meta, title, dateText, note, days, ms, prefix, categoryLabel, categoryColor, url, ongoing }) => {
+    const cl = countLabel(days, ms);
+    const row = document.createElement(url ? 'a' : 'div');
+    row.className = 'row';
+    if (url) {
+      row.href = url;
+      row.target = '_blank';
+      row.rel = 'noopener noreferrer';
+    }
+    if (categoryColor) {
+      row.style.borderLeft = `3px solid ${categoryColor}`;
+      row.style.paddingLeft = '11px';
+    }
+
+    let noteHtml = '';
+    if (note) {
+      if (Array.isArray(note)) {
+        noteHtml = '<ul class="row-note-list">' + note.map(n => `<li>${escapeHtml(n)}</li>`).join('') + '</ul>';
+      } else {
+        noteHtml = `<div class="row-note">${escapeHtml(note)}</div>`;
+      }
+    }
+
+    const prefixHtml = cl.type !== 'text' ? `<span class="row-prefix">${prefix}</span>` : '';
+
+    let countHtml = '';
+    if (cl.type === 'text') {
+      countHtml = `<div class="num today">${escapeHtml(cl.text)}</div>`;
+    } else if (cl.type === 'dhm') {
+      countHtml = `
+        <div style="display:flex; align-items:baseline; gap:2px; justify-content:flex-end; flex-wrap:wrap;">
+          ${prefixHtml}
+          <span class="num num-sm">${cl.days}</span><span class="unit">日</span>
+          <span class="num num-sm" style="margin-left:3px;">${cl.hours}</span><span class="unit">時間</span>
+          <span class="num num-sm" style="margin-left:3px;">${cl.minutes}</span><span class="unit">分</span>
+        </div>`;
+    } else {
+      countHtml = `
+        <div style="display:flex; align-items:baseline; gap:2px; justify-content:flex-end;">
+          ${prefixHtml}
+          <span class="num">${cl.value}</span><span class="unit">${cl.unit}</span>
+        </div>`;
+    }
+
+    row.innerHTML = `
+      <div class="row-icon-wrap">
+        <div class="row-icon">${meta.icon}</div>
+        ${ongoing ? '<span class="ongoing-badge">開催中</span>' : ''}
+      </div>
+      <div class="row-body">
+        ${categoryLabel ? `<div class="row-category" style="${categoryColor ? `color:${categoryColor};` : ''}">${escapeHtml(categoryLabel)}</div>` : ''}
+        <div class="row-title">${escapeHtml(title)}</div>
+        <div class="row-sub">${escapeHtml(dateText)}</div>
+        ${noteHtml}
+        <div class="row-count">
+          ${countHtml}
+        </div>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function fmtDate(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function renderSettings() {
+  const container = document.getElementById('settingItems');
+  container.innerHTML = '';
+
+  ITEM_ORDER.forEach(key => {
+    const meta = ITEM_META[key];
+    const item = config[key];
+    const wrap = document.createElement('div');
+    wrap.className = 'setting-item';
+
+    wrap.innerHTML = `
+      <div class="setting-check-row" data-toggle="${key}">
+        <div class="checkbox ${item.enabled ? 'checked' : ''}" data-checkbox="${key}">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.5L13 4.5" stroke="#201607" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span class="setting-icon">${meta.icon}</span>
+        <span class="setting-label">${meta.label}</span>
+      </div>
+    `;
+    container.appendChild(wrap);
+  });
+
+  // checkbox toggle
+  container.querySelectorAll('[data-toggle]').forEach(el => {
+    el.addEventListener('click', () => {
+      const key = el.getAttribute('data-toggle');
+      config[key].enabled = !config[key].enabled;
+      renderSettings();
+    });
+  });
+}
+
+async function loadConfig() {
+  // Content (dates, titles, patch numbers) is always fixed in code.
+  // Only the show/hide preference is personal and saved per user.
+  config = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+  try {
+    const result = await window.storage.get(STORAGE_KEY, false);
+    if (result && result.value) {
+      const saved = JSON.parse(result.value);
+      ITEM_ORDER.forEach(key => {
+        if (saved[key] && typeof saved[key].enabled === 'boolean') {
+          config[key].enabled = saved[key].enabled;
+        }
+      });
+    }
+  } catch (e) {
+    // no saved preferences yet, use defaults
+  }
+  renderRows();
+  renderSettings();
+  updateTodayDate();
+}
+
+async function saveConfig() {
+  const statusEl = document.getElementById('saveStatus');
+  const prefs = {};
+  ITEM_ORDER.forEach(key => { prefs[key] = { enabled: config[key].enabled }; });
+  try {
+    await window.storage.set(STORAGE_KEY, JSON.stringify(prefs), false);
+    statusEl.textContent = '保存しました';
+  } catch (e) {
+    statusEl.textContent = '保存に失敗しました（このセッションのみ反映）';
+  }
+  renderRows();
+  setTimeout(() => { statusEl.textContent = ''; }, 2000);
+}
+
+document.getElementById('gearBtn').addEventListener('click', () => {
+  const panel = document.getElementById('settingsPanel');
+  const btn = document.getElementById('gearBtn');
+  panel.classList.toggle('open');
+  btn.classList.toggle('open');
+});
+document.getElementById('cancelBtn').addEventListener('click', () => {
+  document.getElementById('settingsPanel').classList.remove('open');
+  document.getElementById('gearBtn').classList.remove('open');
+});
+document.getElementById('saveBtn').addEventListener('click', saveConfig);
+
+loadConfig();
+setInterval(() => { renderRows(); updateTodayDate(); }, 60000);
+</script>
+
+</body>
+</html>
