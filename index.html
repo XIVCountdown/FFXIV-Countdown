@@ -124,6 +124,13 @@
     border-radius: 20px;
     padding: 4px 10px;
     white-space: nowrap;
+    text-decoration: none;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .current-patch-badge:hover {
+    border-color: var(--gold);
+    background: var(--bg-panel-2);
   }
 
   .today-date {
@@ -433,7 +440,7 @@
   <div class="header-row">
     <div class="eyebrow"><span class="dot"></span>FINAL FANTASY XIV</div>
     <div style="display:flex; align-items:center; gap:10px;">
-      <span class="current-patch-badge" id="currentPatchBadge"></span>
+      <a class="current-patch-badge" id="currentPatchBadge" href="https://jp.finalfantasyxiv.com/lodestone/topics/detail/786582567848b6373ddd0063aab675bd63e4f4ff" target="_blank" rel="noopener noreferrer"></a>
       <button class="gear-btn" id="gearBtn" title="設定">⚙</button>
     </div>
   </div>
@@ -511,7 +518,7 @@ const DEFAULT_CONFIG = {
     enabled: true,
     title: 'パッチ7.56',
     date: '2026-09-08',
-    note: ['メインクエストPart2', '魔獣使い実装']
+    note: ['メインクエストPart2', '魔獣使い']
   },
   reset: {
     enabled: true
