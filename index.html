@@ -9,6 +9,10 @@
 <meta name="apple-mobile-web-app-title" content="FF14 Watch">
 <meta name="theme-color" content="#0a0e17">
 <title>FFXIV Patch Watch</title>
+<meta property="og:title" content="FFXIV Patch Watch">
+<meta property="og:description" content="FF14のパッチ・週次リセット・PLL・シーズナルイベント・ファンフェスをまとめてカウントダウン表示する非公式ウィジェット">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
 <meta name="googlebot" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
@@ -40,8 +44,9 @@
     background: var(--bg-void);
     font-family: var(--font-body);
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
+    gap: 20px;
     min-height: 100vh;
   }
 
@@ -288,6 +293,183 @@
     letter-spacing: 0.02em;
   }
 
+  /* ---- Calendar (appended below the widget) ---- */
+  .cal-month-nav {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+
+  .cal-month-title {
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+    text-align: center;
+  }
+  .cal-month-title .yr {
+    font-size: 12px;
+    color: var(--ink-dim);
+    font-family: var(--font-body);
+    font-weight: 500;
+    margin-left: 6px;
+  }
+
+  .cal-nav-btn {
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .cal-nav-btn:hover { border-color: var(--gold); color: var(--gold-bright); }
+
+  .cal-today-btn {
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    font-family: var(--font-body);
+    font-size: 10.5px;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  .cal-today-btn:hover { border-color: var(--gold); color: var(--gold-bright); }
+
+  .cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 4px;
+  }
+  .cal-weekdays span {
+    text-align: center;
+    font-size: 10px;
+    color: var(--ink-faint);
+    letter-spacing: 0.04em;
+    padding-bottom: 6px;
+  }
+  .cal-weekdays span.sun { color: #d97a7a; }
+  .cal-weekdays span.sat { color: #7aa8d9; }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+  }
+
+  .cal-cell {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+    background: transparent;
+    border: 1px solid transparent;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .cal-cell.empty { visibility: hidden; }
+  .cal-cell .daynum {
+    font-size: 12.5px;
+    color: var(--ink-dim);
+    font-variant-numeric: tabular-nums;
+  }
+  .cal-cell.has-event {
+    cursor: pointer;
+    background: var(--bg-panel-2);
+    border: 1px solid var(--line);
+  }
+  .cal-cell.has-event .daynum { color: var(--ink); font-weight: 500; }
+  .cal-cell.has-event:hover { border-color: var(--gold); }
+  .cal-cell.today { border-color: var(--gold); }
+  .cal-cell.today .daynum { color: var(--gold-bright); font-weight: 700; }
+  .cal-cell.selected { background: var(--bg-panel-3); border-color: var(--crystal); }
+
+  .cal-dot-row {
+    display: flex;
+    gap: 2px;
+    margin-top: 2px;
+    height: 5px;
+    align-items: center;
+  }
+  .cal-dot-row .pip { width: 4px; height: 4px; border-radius: 50%; }
+
+  .cal-detail-panel {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--line);
+  }
+  .cal-detail-date {
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+  .cal-detail-empty {
+    font-size: 12px;
+    color: var(--ink-faint);
+    text-align: center;
+    padding: 10px 0;
+  }
+  .cal-detail-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: var(--bg-panel-2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 11px 13px;
+    margin-bottom: 8px;
+    text-decoration: none;
+    color: inherit;
+  }
+  .cal-detail-card:last-child { margin-bottom: 0; }
+  a.cal-detail-card { cursor: pointer; transition: border-color 0.15s; }
+  a.cal-detail-card:hover { border-color: var(--gold); }
+  .cal-detail-icon {
+    width: 26px; height: 26px;
+    flex-shrink: 0;
+    border-radius: 7px;
+    background: var(--bg-panel-3);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--crystal);
+    font-size: 12px;
+    margin-top: 1px;
+  }
+  .cal-detail-body { flex: 1; min-width: 0; }
+  .cal-detail-category {
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .cal-detail-title { font-size: 12.5px; color: var(--ink); font-weight: 500; }
+  .cal-detail-range { font-size: 10.5px; color: var(--ink-dim); margin-top: 2px; }
+
+  .cal-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+  .cal-legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--ink-dim); }
+  .cal-legend-item .pip { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
   /* Larger, more comfortable sizing on wider (desktop) screens */
   @media (min-width: 700px) {
     .widget {
@@ -311,6 +493,10 @@
     .row-count .num.today { font-size: 16px; }
     .ongoing-badge { font-size: 10.5px; padding: 2px 8px; }
     .footer-note { font-size: 12px; }
+    .cal-month-title { font-size: 24px; }
+    .cal-cell .daynum { font-size: 15px; }
+    .cal-detail-title { font-size: 14.5px; }
+    .cal-detail-range { font-size: 12px; }
   }
 </style>
 </head>
@@ -325,6 +511,34 @@
   <div class="today-date" id="todayDate"></div>
 
   <div class="rows" id="rows"></div>
+
+  <div class="footer-note">※非公式</div>
+</div>
+
+<div class="widget">
+  <div class="eyebrow"><span class="dot"></span>FINAL FANTASY XIV</div>
+
+  <div class="cal-month-nav">
+    <button class="cal-nav-btn" id="calPrevBtn">‹</button>
+    <div class="cal-month-title" id="calMonthTitle"></div>
+    <div style="display:flex; align-items:center; gap:6px; justify-self:end;">
+      <button class="cal-today-btn" id="calTodayBtn">今日</button>
+      <button class="cal-nav-btn" id="calNextBtn">›</button>
+    </div>
+  </div>
+
+  <div class="cal-weekdays">
+    <span class="sun">日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span class="sat">土</span>
+  </div>
+
+  <div class="cal-grid" id="calGrid"></div>
+
+  <div class="cal-detail-panel">
+    <div class="cal-detail-date" id="calDetailDate"></div>
+    <div id="calDetailContent"></div>
+  </div>
+
+  <div class="cal-legend" id="calLegend"></div>
 
   <div class="footer-note">※非公式</div>
 </div>
@@ -699,6 +913,184 @@ function initWidget() {
 
 initWidget();
 setInterval(() => { renderRows(); updateTodayDate(); }, 60000);
+
+/* ============ Calendar (shares the same DEFAULT_CONFIG data) ============ */
+
+function buildCalendarEvents() {
+  const events = [];
+
+  // patch (next patch)
+  events.push({
+    icon: ITEM_META.patch.icon,
+    category: CATEGORY_LABELS.patch,
+    color: CATEGORY_COLORS.patch,
+    title: 'パッチ' + DEFAULT_CONFIG.patch.nextPatch,
+    start: DEFAULT_CONFIG.patch.nextDate,
+    end: DEFAULT_CONFIG.patch.nextDate,
+    url: DEFAULT_CONFIG.patch.url || null
+  });
+
+  // patch2
+  if (DEFAULT_CONFIG.patch2 && DEFAULT_CONFIG.patch2.date) {
+    events.push({
+      icon: ITEM_META.patch2.icon,
+      category: CATEGORY_LABELS.patch2,
+      color: CATEGORY_COLORS.patch2,
+      title: DEFAULT_CONFIG.patch2.title,
+      start: DEFAULT_CONFIG.patch2.date,
+      end: DEFAULT_CONFIG.patch2.date,
+      url: DEFAULT_CONFIG.patch2.url || null
+    });
+  }
+
+  // generic date-based items
+  ['pll', 'mogcolle', 'seasonal', 'fanfest_anaheim', 'fanfest_berlin', 'fanfest_tokyo'].forEach(key => {
+    const item = DEFAULT_CONFIG[key];
+    if (!item || !item.enabled) return;
+    const start = item.startDate || item.date;
+    const end = item.date;
+    if (!start || !end) return;
+    events.push({
+      icon: ITEM_META[key].icon,
+      category: CATEGORY_LABELS[key],
+      color: CATEGORY_COLORS[key],
+      title: item.title,
+      start,
+      end,
+      url: item.url || null
+    });
+  });
+
+  return events;
+}
+
+const CAL_EVENTS = buildCalendarEvents();
+
+function calTodayJST() {
+  const now = new Date();
+  const j = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+  return { y: j.getFullYear(), m: j.getMonth(), d: j.getDate(), str: `${j.getFullYear()}-${String(j.getMonth()+1).padStart(2,'0')}-${String(j.getDate()).padStart(2,'0')}` };
+}
+
+const calToday = calTodayJST();
+let calViewYear = calToday.y;
+let calViewMonth = calToday.m;
+let calSelectedDateStr = calToday.str;
+
+function calDateStr(y, m, d) {
+  return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+
+function calEventsOnDate(ds) {
+  return CAL_EVENTS.filter(e => ds >= e.start && ds <= e.end);
+}
+
+function calFmtDate(iso) {
+  const [y,m,d] = iso.split('-');
+  return `${y}/${m}/${d}`;
+}
+
+function renderCalGrid() {
+  document.getElementById('calMonthTitle').innerHTML =
+    `${calViewMonth + 1}月<span class="yr">${calViewYear}</span>`;
+
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+
+  const firstDay = new Date(calViewYear, calViewMonth, 1).getDay();
+  const daysInMonth = new Date(calViewYear, calViewMonth + 1, 0).getDate();
+
+  for (let i = 0; i < firstDay; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell empty';
+    grid.appendChild(cell);
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = calDateStr(calViewYear, calViewMonth, d);
+    const evs = calEventsOnDate(ds);
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell';
+    if (evs.length > 0) cell.classList.add('has-event');
+    if (ds === calToday.str) cell.classList.add('today');
+    if (ds === calSelectedDateStr) cell.classList.add('selected');
+
+    let dotsHtml = '';
+    if (evs.length > 0) {
+      dotsHtml = '<div class="cal-dot-row">' +
+        evs.slice(0, 4).map(e => `<span class="pip" style="background:${e.color}"></span>`).join('') +
+        '</div>';
+    }
+
+    cell.innerHTML = `<span class="daynum">${d}</span>${dotsHtml}`;
+    cell.addEventListener('click', () => {
+      calSelectedDateStr = ds;
+      renderCalGrid();
+      renderCalDetail();
+    });
+    grid.appendChild(cell);
+  }
+}
+
+function renderCalDetail() {
+  const evs = calEventsOnDate(calSelectedDateStr);
+  document.getElementById('calDetailDate').textContent =
+    calFmtDate(calSelectedDateStr) + (calSelectedDateStr === calToday.str ? '（本日）' : '');
+
+  const content = document.getElementById('calDetailContent');
+  if (evs.length === 0) {
+    content.innerHTML = '<div class="cal-detail-empty">この日の予定はありません</div>';
+    return;
+  }
+
+  content.innerHTML = evs.map(e => {
+    const rangeText = e.start === e.end ? calFmtDate(e.start) : `${calFmtDate(e.start)} 〜 ${calFmtDate(e.end)}`;
+    const tag = e.start !== e.end ? '<span style="margin-left:6px;">開催中</span>' : '';
+    const inner = `
+      <div class="cal-detail-icon" style="color:${e.color}">${e.icon}</div>
+      <div class="cal-detail-body">
+        <div class="cal-detail-category" style="color:${e.color}">${escapeHtml(e.category)}</div>
+        <div class="cal-detail-title">${escapeHtml(e.title)}</div>
+        <div class="cal-detail-range">${escapeHtml(rangeText)}${tag}</div>
+      </div>
+    `;
+    if (e.url) {
+      return `<a class="cal-detail-card" href="${e.url}" target="_blank" rel="noopener noreferrer">${inner}</a>`;
+    }
+    return `<div class="cal-detail-card">${inner}</div>`;
+  }).join('');
+}
+
+function renderCalLegend() {
+  const seen = new Map();
+  CAL_EVENTS.forEach(e => { if (!seen.has(e.category)) seen.set(e.category, e.color); });
+  const legend = document.getElementById('calLegend');
+  legend.innerHTML = Array.from(seen.entries()).map(([cat, color]) =>
+    `<div class="cal-legend-item"><span class="pip" style="background:${color}"></span>${escapeHtml(cat)}</div>`
+  ).join('');
+}
+
+document.getElementById('calPrevBtn').addEventListener('click', () => {
+  calViewMonth--;
+  if (calViewMonth < 0) { calViewMonth = 11; calViewYear--; }
+  renderCalGrid();
+});
+document.getElementById('calNextBtn').addEventListener('click', () => {
+  calViewMonth++;
+  if (calViewMonth > 11) { calViewMonth = 0; calViewYear++; }
+  renderCalGrid();
+});
+document.getElementById('calTodayBtn').addEventListener('click', () => {
+  calViewYear = calToday.y;
+  calViewMonth = calToday.m;
+  calSelectedDateStr = calToday.str;
+  renderCalGrid();
+  renderCalDetail();
+});
+
+renderCalGrid();
+renderCalDetail();
+renderCalLegend();
 </script>
 
 </body>
